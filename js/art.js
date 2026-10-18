@@ -222,7 +222,7 @@ function glassSVG(r,R,u){const c=r.col;let s=drinkBg(c);
    const o="M140 64 L270 64 L284 52 L286 70 L272 82 L278 244 Q210 256 142 244 Z";
    s+=`<path d="M146 92 q-50 10 -46 64 q4 42 48 52" stroke="#FFFFFF" stroke-width="9" fill="none" opacity=".45"/>`;
    s+=`<clipPath id="p${u}"><path d="${o}"/></clipPath><path d="${o}" fill="#FFFFFF" opacity=".08"/><g clip-path="url(#p${u})"><rect x="120" y="96" width="180" height="170" fill="url(#l${u})"/>`;
-   for(let i=0;i<7;i++){const x=160+R()*100,y=110+R()*120;s+=i%2?wheel(f(x),f(y),17,'#E8851E','#FBC66B'):`<path d="${blob(x,y,14,11,R,7)}" fill="#F4E6B0"/><path d="${blob(x,y,14,11,R,7)}" fill="none" stroke="#C2331F" stroke-width="2.5"/>`}
+   for(let i=0;i<7;i++){const x=160+R()*100,y=110+R()*120;s+=i%2?wheel(x,y,17,'#E8851E','#FBC66B'):`<path d="${blob(x,y,14,11,R,7)}" fill="#F4E6B0"/><path d="${blob(x,y,14,11,R,7)}" fill="none" stroke="#C2331F" stroke-width="2.5"/>`}
    for(let i=0;i<5;i++)s+=`<rect x="${f(160+R()*90)}" y="${f(96+R()*30)}" width="22" height="20" rx="4" fill="#FFFFFF" opacity=".3"/>`;
    s+=`</g><path d="${o}" fill="none" stroke="#FFFFFF" stroke-width="3" opacity=".75"/><rect x="152" y="80" width="7" height="150" rx="3.5" fill="#FFFFFF" opacity=".35"/>`;
    s+=`<path d="M300 236 L330 186 L360 236 Z" fill="#FFFFFF" opacity=".1"/><path d="M302 236 L332 202 L358 236 Z" fill="url(#l${u})"/><rect x="329" y="236" width="4" height="12" fill="#FFFFFF" opacity=".4"/>`;return s}

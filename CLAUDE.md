@@ -4,10 +4,10 @@
 
 ## 專案重點
 - 介面文字、食譜內容一律使用繁體中文（台灣用語）。
-- 食譜資料：`js/data-food-1.js`、`js/data-food-2.js`（`window.FOOD`），調酒：`js/data-drinks.js`（`window.DRINK`），小教室：`js/data-learn.js`。資料欄位說明見 README「新增一道食譜」。
+- 食譜資料：`js/data-food-1.js`、`js/data-food-2.js`、`js/data-food-3.js`（`window.FOOD`），調酒：`js/data-drinks.js`（`window.DRINK`），小教室：`js/data-learn.js`。資料欄位說明見 README「新增一道食譜」。
 - 分類清單在 `js/app.js` 的 `CATS`；新增分類要同步改這裡。
 - 插圖由 `js/art.js` 依 `pic`／`glass` 與 `col` 配色畫成 SVG；食譜加 `photo:"images/xxx.jpg"` 會改用照片。
-- 使用者狀態（做過、收藏、心得、份量）存在 localStorage 的 `wk-state`。
+- 使用者狀態（做過、收藏、心得、份量、購物清單 `shop`／`got`）存在 localStorage 的 `wk-state`。
 - 顏色都寫成 CSS 變數，深色模式在 `css/style.css` 的兩個 dark 區塊。
 
 ## 常用指令

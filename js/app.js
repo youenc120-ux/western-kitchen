@@ -8,7 +8,7 @@ const LV={1:"簡單",2:"中等",3:"進階"};
 const GLASS={coupe:"淺碟杯",martini:"馬丁尼杯",flute:"香檳杯",wine:"葡萄酒杯",rocks:"古典杯",highball:"高球杯",toddy:"耐熱玻璃杯",mug:"銅杯",pitcher:"大水壺",jar:"玻璃瓶"};
 const DRINK_WARN=["未滿 18 歲禁止飲酒。","喝酒不開車、不騎車。","孕婦、正在服藥的人不建議飲酒。"];
 
-let S={done:{},notes:{},serv:{},fav:{},tab:"food",cat:{food:"全部",drink:"全部"},q:""};
+let S={done:{},notes:{},serv:{},fav:{},shop:{},got:{},tab:"food",cat:{food:"全部",drink:"全部"},q:""};
 try{const s=JSON.parse(localStorage.getItem("wk-state")||"null");if(s)S=Object.assign(S,s,{q:""});
   else{const o=JSON.parse(localStorage.getItem("wc2")||"null");if(o){S.done=o.done||{};S.notes=o.notes||{}}}}catch(e){}
 const save=()=>{try{localStorage.setItem("wk-state",JSON.stringify(S))}catch(e){}};
@@ -48,6 +48,33 @@ function favView(){
   <div class="grid">${list.length?list.map(card).join(""):`<div class="empty">還沒有收藏任何食譜。</div>`}</div>
   ${done.length?`<h2 class="sec" style="margin-top:28px">做過的</h2><div class="grid">${done.map(card).join("")}</div>`:""}`;
 }
+/* 購物清單：S.shop 記錄 {食譜 id: 份量}，S.got 記錄已買到的項目 */
+const num=v=>v>=10?Math.round(v):Math.round(v*10)/10;
+function shopItems(){
+  const m=new Map();
+  Object.keys(S.shop).forEach(id=>{const r=byId(id);if(!r)return;const k=S.shop[id]/r.serv;
+    r.ing.forEach(i=>{if(typeof i==="string")return;const key=i[0]+"|"+(i[1]==null?"":i[2]);
+      const o=m.get(key)||{key,n:i[0],u:i[2],v:i[1]==null?null:0,from:[]};
+      if(i[1]!=null)o.v+=i[1]*k;if(!o.from.includes(r.name))o.from.push(r.name);m.set(key,o)})});
+  return [...m.values()];
+}
+const shopAmt=i=>i.v==null?i.u:`${num(i.v)} ${i.u}`;
+function pruneGot(){const keys=new Set(shopItems().map(i=>i.key));Object.keys(S.got).forEach(k=>{if(!keys.has(k))delete S.got[k]})}
+function shopView(){
+  const rs=Object.keys(S.shop).map(byId).filter(Boolean),items=shopItems(),left=items.filter(i=>!S.got[i.key]).length;
+  $("#view").innerHTML=`<section class="hero"><h1>購物清單</h1><p>在食譜頁按「加入購物清單」，食材會依照你設定的份量合併在這裡。買到的打勾，下次打開還會記得。</p></section>
+  ${rs.length?`<div class="shop">
+    <div class="box"><h2 class="sec">要做的菜</h2><ul class="shop-r">${rs.map(r=>`<li><button type="button" class="lnk" data-go="${r.id}">${esc(r.name)}</button><span>${S.shop[r.id]} ${esc(r.unit)}</span><button type="button" class="x" data-unshop="${r.id}" aria-label="從清單移除${esc(r.name)}">×</button></li>`).join("")}</ul></div>
+    <div class="box"><h2 class="sec">要買的東西 <small>${left?`還有 ${left} 項`:"都買齊了！"}</small></h2>
+      <ul class="ing">${items.map(i=>`<li><label><input type="checkbox" data-got="${esc(i.key)}"${S.got[i.key]?" checked":""}><span class="n">${esc(i.n)}${i.from.length>1?`<small class="from">${esc(i.from.join("、"))}</small>`:""}</span><span class="a">${esc(shopAmt(i))}</span></label></li>`).join("")}</ul>
+      <div class="actions"><button type="button" class="act" id="shopcopy">複製清單</button><button type="button" class="act" id="shopclear">全部清空</button></div>
+    </div></div>`:`<div class="empty">清單是空的。打開一道食譜，按「加入購物清單」就會出現在這裡。</div>`}`;
+}
+async function copyShop(b){
+  const t=shopItems().filter(i=>!S.got[i.key]).map(i=>`□ ${i.n}　${shopAmt(i)}`).join("\n");
+  try{if(navigator.share&&matchMedia("(pointer:coarse)").matches)await navigator.share({title:"購物清單",text:t});else{await navigator.clipboard.writeText(t);b.textContent="已複製"}}
+  catch(e){if(e.name!=="AbortError")b.textContent="無法複製"}
+}
 function learnView(){
   $("#view").innerHTML=`<div class="learn">
   <section><h2>廚房新手須知</h2><div class="bgrid">${L.cook.map(b=>`<div><h3>${b[0]}</h3><p>${b[1]}</p></div>`).join("")}</div></section>
@@ -79,6 +106,7 @@ function detail(r){
     <aside class="side">
       <div class="box"><h2 class="sec">${isD?"材料":"食材"}</h2>
         <div class="servings">份量 <button type="button" data-sv="-1" aria-label="減少份量">−</button><b>${sv}</b><button type="button" data-sv="1" aria-label="增加份量">＋</button>${esc(r.unit)}</div>
+        <button type="button" class="act shopbtn" id="shopbtn" aria-pressed="${!!S.shop[r.id]}">${S.shop[r.id]?"✓ 已在購物清單":"＋ 加入購物清單"}</button>
         <ul class="ing">${r.ing.map((i,k)=>typeof i==="string"?`<li class="g">${esc(i.slice(1))}</li>`:
           `<li><label><input type="checkbox" id="i-${r.id}-${k}"><span class="n">${esc(i[0])}</span><span class="a">${esc(amt(i,r))}</span></label></li>`).join("")}</ul>
       </div>
@@ -110,7 +138,7 @@ function setNav(){document.querySelectorAll(".nav button").forEach(b=>b.setAttri
 function route(){
   const id=location.hash.slice(1);const r=byId(id);
   if(r){S.tab=r.kind;detail(r);scrollTo(0,0)}
-  else if(S.tab==="fav")favView();else if(S.tab==="learn")learnView();else listView(S.tab);
+  else if(S.tab==="fav")favView();else if(S.tab==="shop")shopView();else if(S.tab==="learn")learnView();else listView(S.tab);
   setNav();updCount();
 }
 function clearHash(){if(location.hash)history.pushState("",document.title,location.pathname+location.search)}
@@ -124,8 +152,12 @@ document.addEventListener("click",e=>{
   if(b.dataset.back){clearHash();route();return}
   if(b.dataset.go){if(location.hash.slice(1)===b.dataset.go)route();else location.hash=b.dataset.go;return}
   if(b.dataset.cat){S.cat[S.tab]=b.dataset.cat;save();listView(S.tab);return}
+  if(b.dataset.unshop){delete S.shop[b.dataset.unshop];pruneGot();save();const y=scrollY;shopView();scrollTo(0,y);return}
+  if(b.id==="shopclear"){S.shop={};S.got={};save();shopView();return}
+  if(b.id==="shopcopy"){copyShop(b);return}
   const r=byId(location.hash.slice(1));
-  if(b.dataset.sv&&r){S.serv[r.id]=Math.max(1,Math.min(30,(S.serv[r.id]||r.serv)+ +b.dataset.sv));save();const y=scrollY;detail(r);scrollTo(0,y);return}
+  if(b.dataset.sv&&r){S.serv[r.id]=Math.max(1,Math.min(30,(S.serv[r.id]||r.serv)+ +b.dataset.sv));if(S.shop[r.id])S.shop[r.id]=S.serv[r.id];save();const y=scrollY;detail(r);scrollTo(0,y);return}
+  if(b.id==="shopbtn"&&r){if(S.shop[r.id])delete S.shop[r.id];else S.shop[r.id]=S.serv[r.id]||r.serv;pruneGot();save();b.setAttribute("aria-pressed",!!S.shop[r.id]);b.textContent=S.shop[r.id]?"✓ 已在購物清單":"＋ 加入購物清單";return}
   if(b.dataset.ok){document.getElementById("s"+b.dataset.ok).classList.toggle("ok");return}
   if(b.dataset.tm){startTimer(+b.dataset.tm,b.dataset.lb);return}
   if(b.id==="favbtn"&&r){S.fav[r.id]=!S.fav[r.id];if(!S.fav[r.id])delete S.fav[r.id];save();b.setAttribute("aria-pressed",!!S.fav[r.id]);b.textContent=S.fav[r.id]?"★ 已收藏":"☆ 收藏";return}
@@ -133,6 +165,8 @@ document.addEventListener("click",e=>{
   if(b.id==="donebtn"&&r){S.done[r.id]=!S.done[r.id];if(!S.done[r.id])delete S.done[r.id];save();b.classList.toggle("on",!!S.done[r.id]);b.textContent=S.done[r.id]?"✓ 做過了":"我做完這道了";updCount()}
 });
 document.addEventListener("input",e=>{if(e.target.id&&e.target.id.startsWith("note-")){S.notes[e.target.id.slice(5)]=e.target.value;save()}});
+document.addEventListener("change",e=>{const k=e.target.dataset&&e.target.dataset.got;if(k==null)return;
+  if(e.target.checked)S.got[k]=true;else delete S.got[k];save();const y=scrollY;shopView();scrollTo(0,y)});
 
 /* 螢幕常亮 */
 let wake=null;

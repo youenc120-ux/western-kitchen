@@ -1,7 +1,7 @@
 /* 離線快取：第一次打開後，沒有網路也能看食譜。更新內容時把版本號加 1。 */
-const CACHE = "western-kitchen-v1";
+const CACHE = "western-kitchen-v2";
 const FILES = ["./","index.html","css/style.css","manifest.webmanifest",
-  "js/data-food-1.js","js/data-food-2.js","js/data-drinks.js","js/data-learn.js","js/art.js","js/app.js",
+  "js/data-food-1.js","js/data-food-2.js","js/data-food-3.js","js/data-drinks.js","js/data-learn.js","js/art.js","js/app.js",
   "icons/icon-192.png","icons/icon-512.png","icons/apple-touch-icon.png"];
 self.addEventListener("install", e => { e.waitUntil(caches.open(CACHE).then(c => c.addAll(FILES))); self.skipWaiting(); });
 self.addEventListener("activate", e => {
