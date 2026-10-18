@@ -2,9 +2,9 @@
 
 一個開源、可以安裝到手機的西餐與調酒學習 App。從煎雞腿、義大利麵，到醬汁、發酵麵包、熟成、經典調酒，每一個步驟都說明**怎麼做**，也說明**為什麼要這樣做**。
 
-- **57 道料理**：主菜、麵與飯、湯品、前菜沙拉、早午餐、醬汁、發酵、熟成醃漬、甜點
+- **69 道料理**：星級料理（米其林餐廳常見的經典菜）、主菜、麵與飯、湯品、前菜沙拉、早午餐、醬汁、發酵、熟成醃漬、甜點
 - **24 款調酒**：調酒基礎、餐前酒、經典調酒、早午餐、餐後酒、派對，每一杯都附**無酒精版本**
-- 每道食譜都有插圖、可調整份量的食材、逐步做法、注意事項、失敗救援、保存方式
+- 每道食譜都有真實照片、可調整份量的食材、逐步做法、**擺盤建議**、注意事項、失敗救援、保存方式
 - 步驟內建**計時器**（時間到會響鈴、震動），做菜時可以開啟**螢幕常亮**
 - 收藏、標記做過、寫心得，資料只存在自己的手機裡
 - **購物清單**：把想做的菜加進清單，食材依份量自動合併，買到的可以打勾
@@ -59,6 +59,10 @@ css/style.css           樣式（自動支援深色模式）
 js/data-food-1.js       料理食譜（一）
 js/data-food-2.js       料理食譜（二）
 js/data-food-3.js       料理食譜（三）
+js/data-food-4.js       料理食譜（四）：星級料理與更多家常菜
+js/data-plating.js      擺盤建議（依食譜 id）
+js/data-photos.js       照片的作者與授權
+images/                 食譜照片（<id>.jpg，4:3）
 js/data-drinks.js       調酒
 js/data-learn.js        小教室：新手須知、吧台基礎、術語
 js/art.js               插圖產生器（用程式畫出 SVG）
@@ -89,6 +93,7 @@ tools/build-preview.py  合併成單一 HTML 檔
  tips:["小訣竅"],
  fix:[["失敗狀況","怎麼救"]],
  store:"保存方式",
+ plate:["擺盤建議，一句一個重點"],                       // 也可以寫在 js/data-plating.js
  rel:["benedict"]}                                      // 相關食譜的 id
 ```
 
@@ -98,9 +103,11 @@ tools/build-preview.py  合併成單一 HTML 檔
 
 調酒寫在 `js/data-drinks.js`，另外有 `glass`（杯型：`coupe` `martini` `flute` `wine` `rocks` `highball` `toddy` `mug` `pitcher`）、`method`（調法）、`gar`（裝飾：`orange` `lime` `lemon` `peel` `olive` `cherry` `mint` `berry` `beans` `celery` `salt` `foam` `cream` `fruit`）、`ice`（`cube` `big` `crushed`）、`fizz`（有氣泡）、`mock`（無酒精版本）、`pair`（搭配料理的 id）。
 
-## 換成真實照片
+## 照片
 
-把照片放進 `images/`，在那道食譜加上 `photo:"images/檔名.jpg"`，就會用照片取代插圖。建議尺寸 1200×900（4:3），檔案壓縮在 300 KB 以內。請使用自己拍的、或有授權可以使用的照片。
+目前的照片來自 [Wikimedia Commons](https://commons.wikimedia.org/)，依各自的創用 CC 授權（CC BY、CC BY-SA、CC0 等）使用，作者、授權和原始頁面記錄在 `js/data-photos.js`，App 會顯示在每道食譜的照片下方。重新使用這些照片時，請保留作者與授權標示。沒有照片的食譜會自動改用程式畫的插圖。
+
+想換成自己的照片：把照片存成 `images/<食譜 id>.jpg`，並在 `js/data-photos.js` 裡刪掉那一筆（就不會顯示別人的名字），或是在食譜加上 `photo:"images/檔名.jpg"`。建議尺寸 1200×900（4:3），檔案壓縮在 300 KB 以內。請使用自己拍的、或有授權可以使用的照片。
 
 更新內容後，把 `sw.js` 裡的 `CACHE` 版本號加 1（例如 `v1` → `v2`），手機才會抓到新版本。
 

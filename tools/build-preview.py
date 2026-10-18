@@ -7,7 +7,8 @@ fonts = re.search(r"<!--FONTS-->(.*?)<!--/FONTS-->", html, re.S).group(1).strip(
 body = re.search(r"<!--BODY-->(.*?)<!--/BODY-->", html, re.S).group(1).strip()
 scripts = re.findall(r'<script src="([^"]+)"></script>', re.search(r"<!--SCRIPTS-->(.*?)<!--/SCRIPTS-->", html, re.S).group(1))
 css = (root/"css/style.css").read_text(encoding="utf-8")
-js = "\n".join((root/s).read_text(encoding="utf-8") for s in scripts)
+# 單一檔案帶不走 images/，所以略過照片對照表，改用程式畫的插圖
+js = "\n".join((root/s).read_text(encoding="utf-8") for s in scripts if "data-photos" not in s)
 out = f"""<title>西餐練習簿</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 {fonts}

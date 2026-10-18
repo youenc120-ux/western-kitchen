@@ -1,9 +1,11 @@
 /* 西餐練習簿 — 主程式 */
 (function(){
-const FOOD=window.FOOD.map(r=>Object.assign(r,{kind:"food"}));
-const DRINK=window.DRINK.map(r=>Object.assign(r,{kind:"drink"}));
+const PH=window.PHOTOS||{},PL=window.PLATE||{};
+const prep=(r,kind)=>Object.assign(r,{kind,photo:r.photo||(PH[r.id]?`images/${r.id}.jpg`:null),plate:r.plate||PL[r.id]||null});
+const FOOD=window.FOOD.map(r=>prep(r,"food"));
+const DRINK=window.DRINK.map(r=>prep(r,"drink"));
 const ALL=[...FOOD,...DRINK];const L=window.LEARN;
-const CATS={food:["主菜","麵與飯","湯品","前菜沙拉","早午餐","醬汁","發酵","熟成醃漬","甜點"],drink:["調酒基礎","餐前酒","經典調酒","早午餐","餐後酒","派對"]};
+const CATS={food:["星級料理","主菜","麵與飯","湯品","前菜沙拉","早午餐","醬汁","發酵","熟成醃漬","甜點"],drink:["調酒基礎","餐前酒","經典調酒","早午餐","餐後酒","派對"]};
 const LV={1:"簡單",2:"中等",3:"進階"};
 const GLASS={coupe:"淺碟杯",martini:"馬丁尼杯",flute:"香檳杯",wine:"葡萄酒杯",rocks:"古典杯",highball:"高球杯",toddy:"耐熱玻璃杯",mug:"銅杯",pitcher:"大水壺",jar:"玻璃瓶"};
 const DRINK_WARN=["未滿 18 歲禁止飲酒。","喝酒不開車、不騎車。","孕婦、正在服藥的人不建議飲酒。"];
@@ -34,7 +36,7 @@ function listView(kind){
   $("#view").innerHTML=`
   <section class="hero">
     <h1>${kind==="food"?"從一顆洋蔥開始的西餐廚房":"餐桌旁的吧台"}</h1>
-    <p>${kind==="food"?`${FOOD.length} 道料理食譜：主菜、義大利麵、湯、醬汁、發酵麵包與熟成。每一步都說明怎麼做，也說明為什麼。`:`${DRINK.length} 款西餐中常見的調酒：開胃的、經典的、早午餐的、餐後的。每一杯都附有無酒精版本和推薦搭配的料理。`}</p>
+    <p>${kind==="food"?`${FOOD.length} 道料理食譜：星級餐廳的經典菜、主菜、義大利麵、湯、醬汁、發酵麵包與熟成，還有擺盤建議。每一步都說明怎麼做，也說明為什麼。`:`${DRINK.length} 款西餐中常見的調酒：開胃的、經典的、早午餐的、餐後的。每一杯都附有無酒精版本和推薦搭配的料理。`}</p>
     ${kind==="drink"?`<div class="notice"><b>飲酒提醒</b>　未滿 18 歲禁止飲酒，喝酒不開車。每款調酒都有「無酒精版本」，大家都能做。</div>`:""}
     <div class="search"><input id="q" type="search" placeholder="${kind==="food"?"搜尋料理，例如：醬汁、牛排、麵包":"搜尋調酒，例如：琴酒、檸檬、氣泡"}" value="${esc(S.q)}" aria-label="搜尋"></div>
   </section>
@@ -81,7 +83,7 @@ function learnView(){
   <section><h2>量匙換算</h2><div class="measure">${L.measure.map(m=>`<span>${m}</span>`).join("")}</div></section>
   <section><h2>吧台基礎</h2><div class="bgrid">${L.bar.map(b=>`<div><h3>${b[0]}</h3><p>${b[1]}</p></div>`).join("")}</div></section>
   <section><h2>術語小抄</h2><dl class="gloss">${L.gloss.map(g=>`<div><dt>${g[0]}<span>${g[1]}</span></dt><dd>${g[2]}</dd></div>`).join("")}</dl></section>
-  <section class="about"><h2>關於這個 App</h2><p>西餐練習簿是開源專案，食譜、插圖與程式碼都可以自由使用與修改（MIT 授權）。</p><p>進度、收藏和心得只存在你這台裝置的瀏覽器裡，不會上傳到任何地方。</p></section>
+  <section class="about"><h2>關於這個 App</h2><p>西餐練習簿是開源專案，食譜、插圖與程式碼都可以自由使用與修改（MIT 授權）。</p><p>進度、收藏和心得只存在你這台裝置的瀏覽器裡，不會上傳到任何地方。</p><p>食譜照片來自 Wikimedia Commons，依各自的創用 CC 授權使用（已裁切並縮小），作者與授權標示在每道食譜的照片下方，點作者名字可以看到原始照片。照片僅供參考，實際成品會依做法和擺盤而不同。</p></section>
   </div>`;
 }
 function amt(i,r){if(i[1]==null)return i[2];const k=(S.serv[r.id]||r.serv)/r.serv;let v=i[1]*k;v=v>=10?Math.round(v):Math.round(v*10)/10;return `${v} ${i[2]}`}
@@ -94,7 +96,7 @@ function detail(r){
   const warn=isD&&r.alc!==false?[...DRINK_WARN,...r.warn]:r.warn;
   $("#view").innerHTML=`
   <button type="button" class="back" data-back="1">← 回到${isD?"調酒":"料理"}</button>
-  <section class="rhead">${pic(r)}
+  <section class="rhead"><figure class="hero-pic">${pic(r)}${PH[r.id]&&r.photo===`images/${r.id}.jpg`?`<figcaption>照片：<a href="${esc(PH[r.id].page)}" target="_blank" rel="noopener">${esc(PH[r.id].by)}</a>，${esc(PH[r.id].lic)}，Wikimedia Commons</figcaption>`:""}</figure>
     <div><span class="tag">${r.cat}</span><h1>${esc(r.name)}</h1><div class="fr">${esc(r.fr)}</div>
       <p class="intro">${esc(r.intro)}</p>
       <div class="facts">${facts.map(f=>`<div><small>${f[0]}</small><b>${esc(f[1])}</b></div>`).join("")}</div>
@@ -120,6 +122,7 @@ function detail(r){
         ${s.x?`<div class="wn"><b>注意：</b>${esc(s.x)}</div>`:""}
         ${s.s?`<div class="row">${typeof s.s==="number"?`<button type="button" class="tbtn" data-tm="${s.s}" data-lb="${esc(r.name)}・${esc(s.t)}">計時 ${fmtMin(s.s)}</button>`:`<span class="wait">等待 ${esc(s.s)}</span>`}</div>`:""}
         </div></li>`).join("")}</ol></section>
+      ${r.plate?`<section class="plating"><h2 class="sec">擺盤建議</h2><ol>${r.plate.map(p=>`<li>${esc(p)}</li>`).join("")}</ol></section>`:""}
       ${isD&&r.mock?`<section class="mock"><h2 class="sec">無酒精版本：${esc(r.mock.name)}</h2><p><b>材料：</b>${esc(r.mock.ing)}</p><p>${esc(r.mock.d)}</p></section>`:""}
       <section class="alert"><h2 class="sec">注意事項</h2><ul>${warn.map(w=>`<li>${esc(w)}</li>`).join("")}</ul></section>
       ${r.tips?`<section class="tips"><h2 class="sec">小訣竅</h2><ul>${r.tips.map(t=>`<li>${esc(t)}</li>`).join("")}</ul></section>`:""}
